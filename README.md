@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+https://magical-cajeta-d376f7.netlify.app
 # Attendance-portal
 Attendance portal for student using react and firebase
 =======
