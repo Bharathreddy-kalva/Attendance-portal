@@ -1,15 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { db } from "../firebase";
-import { collection, addDoc, getDocs, updateDoc } from "firebase/firestore"; // Import missing functions
+import { collection, addDoc, getDocs, updateDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth"; // Import Firebase Authentication
 
 const Dashboard = () => {
-  const [studentName, setStudentName] = useState("");
+  const [user, setUser] = useState(null); // Track the logged-in user
+
+  useEffect(() => {
+    // Get the logged-in user from Firebase Authentication
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      setUser(currentUser); // Set user data if logged in
+    } else {
+      // Handle case when no user is logged in
+      console.log("No user is logged in");
+    }
+  }, []);
 
   const handleMarkInTime = async () => {
     try {
+      if (!user) {
+        alert("You must be logged in to mark attendance");
+        return;
+      }
       const timestamp = new Date();
+      // Use the logged-in user's email as the name
       await addDoc(collection(db, "attendance"), {
-        name: studentName,
+        name: user.email, // Use email as the student name
         status: "Present",
         inTime: timestamp,
         outTime: null,
@@ -23,10 +41,14 @@ const Dashboard = () => {
 
   const handleMarkOutTime = async () => {
     try {
+      if (!user) {
+        alert("You must be logged in to mark out-time");
+        return;
+      }
       const timestamp = new Date();
       const attendanceRef = await getDocs(collection(db, "attendance"));
       const doc = attendanceRef.docs.find(
-        (doc) => doc.data().name === studentName && doc.data().outTime === null
+        (doc) => doc.data().name === user.email && doc.data().outTime === null
       );
       if (doc) {
         await updateDoc(doc.ref, {
@@ -44,14 +66,15 @@ const Dashboard = () => {
   return (
     <div>
       <h2>Mark Attendance</h2>
-      <input
-        type="text"
-        placeholder="Student Name"
-        value={studentName}
-        onChange={(e) => setStudentName(e.target.value)}
-      />
-      <button onClick={handleMarkInTime}>Mark In-Time</button>
-      <button onClick={handleMarkOutTime}>Mark Out-Time</button>
+      {user ? (
+        <div>
+          <p>Logged in as: {user.email}</p>
+          <button onClick={handleMarkInTime}>Mark In-Time</button>
+          <button onClick={handleMarkOutTime}>Mark Out-Time</button>
+        </div>
+      ) : (
+        <p>Please log in to mark attendance</p>
+      )}
     </div>
   );
 };

@@ -1,27 +1,48 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from 'react';
 import { db } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import { auth } from '../firebase'; // Assuming you're using Firebase Authentication
 
 const AttendanceRecords = () => {
   const [records, setRecords] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
-    const fetchRecords = async () => {
-      const querySnapshot = await getDocs(collection(db, "attendance"));
-      const attendanceData = querySnapshot.docs.map(doc => doc.data());
-      setRecords(attendanceData);
-    };
-    fetchRecords();
-  }, []);
+    // Get current user's email to check if they are an admin
+    const user = auth.currentUser;
+    if (user) {
+      setUserEmail(user.email);
+      setIsAdmin(user.email.includes("admin")); // Check if email contains "admin"
+    }
 
-  // Function to calculate the time spent in college (in hours)
+    const fetchRecords = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "attendance"));
+        const attendanceData = querySnapshot.docs.map(doc => doc.data());
+        
+        if (isAdmin) {
+          setRecords(attendanceData); // If admin, show all records
+        } else {
+          // If student, filter the records based on their email/name
+          const studentRecords = attendanceData.filter(record => record.name === userEmail);
+          setRecords(studentRecords);
+        }
+      } catch (error) {
+        console.error("Error fetching records: ", error);
+      }
+    };
+
+    fetchRecords();
+  }, [isAdmin, userEmail]);
+
   const calculateTimeSpent = (inTime, outTime) => {
     if (inTime && outTime) {
-      const inTimestamp = inTime.seconds * 1000; // Firebase timestamp in milliseconds
+      const inTimestamp = inTime.seconds * 1000;
       const outTimestamp = outTime.seconds * 1000;
-      const timeSpent = (outTimestamp - inTimestamp) / (1000 * 60 * 60); // Convert milliseconds to hours
-      return timeSpent.toFixed(2); // Round to 2 decimal places
+      const timeSpent = (outTimestamp - inTimestamp) / (1000 * 60 * 60);
+      return timeSpent.toFixed(2);
     }
     return 0;
   };

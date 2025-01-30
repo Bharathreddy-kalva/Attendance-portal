@@ -1,4 +1,3 @@
-// src/pages/Login.js
 import React, { useState } from 'react';
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -14,6 +13,10 @@ const Login = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Login successful");
+      
+      // Save the email in local storage or context
+      localStorage.setItem("userEmail", email);
+
       navigate("/dashboard");
     } catch (error) {
       console.error("Error signing in:", error);
@@ -60,7 +63,7 @@ const styles = {
     borderRadius: "8px",
     height:"400px",
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-    width: "500px", // Set a fixed width for the form
+    width: "500px", 
   },
   header: {
     textAlign: "center",
@@ -72,7 +75,7 @@ const styles = {
     margin: "10px 0",
     borderRadius: "8px",
     border: "1px solid #ddd",
-    boxSizing: "border-box", // To ensure padding is inside the width
+    boxSizing: "border-box",
   },
   button: {
     width: "100%",
