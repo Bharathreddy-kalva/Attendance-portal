@@ -1,3 +1,11 @@
+<<<<<<< HEAD
+=======
+https://bharath-attendence-portal.netlify.app
+use email:test123@gmail.com and password:Test@123 for loging in
+# Attendance-portal
+Attendance portal for student using react and firebase
+=======
+>>>>>>> 0106ab472d463129ff99c90cbded7cb671034040
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
